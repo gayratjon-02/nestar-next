@@ -43,7 +43,7 @@ export const GET_AGENTS = gql`
 `;
 
 export const GET_MEMBER = gql(`
-query GetMember($input: String!) {
+  query GetMember($input: String!) {
     getMember(memberId: $input) {
         _id
         memberType
