@@ -9,6 +9,12 @@ import AgentCard from '../../libs/components/common/AgentCard';
 import { useRouter } from 'next/router';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { Member } from '../../libs/types/member/member';
+import { useMutation, useQuery } from '@apollo/client';
+import { LIKE_TARGET_MEMBER } from '../../apollo/user/mutation';
+import { GET_AGENTS } from '../../apollo/user/query';
+import { T } from '../../libs/types/common';
+import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
+import { Messages } from '../../libs/config';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -32,6 +38,22 @@ const AgentList: NextPage = ({ initialInput, ...props }: any) => {
 	const [searchText, setSearchText] = useState<string>('');
 
 	/** APOLLO REQUESTS **/
+	const [likeTargetMember] = useMutation(LIKE_TARGET_MEMBER);
+
+	const {
+		loading: getAgentsLoading,
+		data: getAgentsData,
+		error: getAgentsError,
+		refetch: getAgentsRefetch,
+	} = useQuery(GET_AGENTS, {
+		fetchPolicy: 'network-only',
+		variables: { input: searchFilter },
+		notifyOnNetworkStatusChange: true,
+		onCompleted: (data: T) => {
+			setAgents(data?.getAgents?.list);
+			setTotal(data?.getAgents?.metaCounter[0]?.total);
+		},
+	});
 	/** LIFECYCLES **/
 	useEffect(() => {
 		if (router.query.input) {
@@ -83,6 +105,23 @@ const AgentList: NextPage = ({ initialInput, ...props }: any) => {
 			scroll: false,
 		});
 		setCurrentPage(value);
+	};
+
+	const likeMemberHandler = async (user: any, id: string) => {
+		try {
+			if (!id) return;
+			if (!user?._id) throw new Error(Messages.error2);
+
+			await likeTargetMember({
+				variables: { input: id },
+			});
+
+			await getAgentsRefetch({ input: searchFilter });
+			await sweetTopSmallSuccessAlert('success', 800);
+		} catch (err: any) {
+			console.log('ERROR, likeMemberHandler:', err.message);
+			sweetMixinErrorAlert(err.message).then();
+		}
 	};
 
 	if (device === 'mobile') {
@@ -139,7 +178,7 @@ const AgentList: NextPage = ({ initialInput, ...props }: any) => {
 							</div>
 						) : (
 							agents.map((agent: Member) => {
-								return <AgentCard agent={agent} key={agent._id} />;
+								return <AgentCard agent={agent} key={agent._id} likeMemberHandler={likeMemberHandler} />;
 							})
 						)}
 					</Stack>
