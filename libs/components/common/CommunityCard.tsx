@@ -15,11 +15,11 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 interface CommunityCardProps {
 	boardArticle: BoardArticle;
 	size?: string;
-	likeBoArticleHandler: any;
+	likeArticleHandler: any;
 }
 
 const CommunityCard = (props: CommunityCardProps) => {
-	const { boardArticle, size = 'normal', likeBoArticleHandler: likeArticleHandler } = props;
+	const { boardArticle, size = 'normal', likeArticleHandler: likeArticleHandler } = props;
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
