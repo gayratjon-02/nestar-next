@@ -7,6 +7,11 @@ import MarkChatUnreadIcon from '@mui/icons-material/MarkChatUnread';
 import { useRouter } from 'next/router';
 import ScrollableFeed from 'react-scrollable-feed';
 import { RippleBadge } from '../../scss/MaterialTheme/styled';
+import { useReactiveVar } from '@apollo/client';
+import { socketVar, userVar } from '../../apollo/store';
+import { Member } from '../types/member/member';
+import { Messages, REACT_APP_API_URL } from '../config';
+import { sweetErrorAlert } from '../sweetAlert';
 
 const NewMessage = (type: any) => {
 	if (type === 'right') {
@@ -32,17 +37,61 @@ const NewMessage = (type: any) => {
 	}
 };
 
+interface MessagePayload {
+	event: string;
+	text: string;
+	memberData: Member;
+}
+
+interface InfoPayload {
+	event: string;
+	totalClients: number;
+	memberData: Member;
+	action: string;
+}
+
 const Chat = () => {
 	const chatContentRef = useRef<HTMLDivElement>(null);
-	const [messagesList, setMessagesList] = useState([]);
-	const [onlineUsers, setOnlineUsers] = useState<number>(4);
-	const textInput = useRef(null);
-	const [message, setMessage] = useState<string>('');
+	const [messagesList, setMessagesList] = useState<MessagePayload[]>([]);
+	const [onlineUsers, setOnlineUsers] = useState<number>(0);
+	const [messageInput, setMessageInput] = useState<string>('');
 	const [open, setOpen] = useState(false);
 	const [openButton, setOpenButton] = useState(false);
 	const router = useRouter();
+	const user = useReactiveVar(userVar);
+	const socket = useReactiveVar(socketVar);
 
 	/** LIFECYCLES **/
+	useEffect(() => {
+		if (!socket) return;
+
+		socket.onmessage = (msg: any) => {
+			const data = JSON.parse(msg.data);
+			console.log('WebSocket message:', data);
+
+			switch (data.event) {
+				case 'info':
+					const newInfo: InfoPayload = data;
+					setOnlineUsers(newInfo.totalClients);
+					break;
+				case 'getMessages':
+					const list: MessagePayload[] = data.list;
+					setMessagesList(list);
+					break;
+				case 'message':
+					const newMessage: MessagePayload = data;
+					setMessagesList((prev) => [...prev, newMessage]);
+					break;
+			}
+		};
+
+		return () => {
+			if (socket.onmessage) {
+				socket.onmessage = null;
+			}
+		};
+	}, [socket]);
+
 	useEffect(() => {
 		const timeoutId = setTimeout(() => {
 			setOpenButton(true);
@@ -59,13 +108,10 @@ const Chat = () => {
 		setOpen((prevState) => !prevState);
 	};
 
-	const getInputMessageHandler = useCallback(
-		(e: any) => {
-			const text = e.target.value;
-			setMessage(text);
-		},
-		[message],
-	);
+	const getInputMessageHandler = useCallback((e: any) => {
+		const text = e.target.value;
+		setMessageInput(text);
+	}, []);
 
 	const getKeyHandler = (e: any) => {
 		try {
@@ -77,7 +123,18 @@ const Chat = () => {
 		}
 	};
 
-	const onClickHandler = () => {};
+	const onClickHandler = () => {
+		if (!messageInput) sweetErrorAlert(Messages.error4);
+		else {
+			socket.send(
+				JSON.stringify({
+					event: 'message',
+					data: messageInput,
+				}),
+			);
+			setMessageInput('');
+		}
+	};
 
 	return (
 		<Stack className="chatting">
@@ -97,33 +154,44 @@ const Chat = () => {
 							<Box flexDirection={'row'} style={{ display: 'flex' }} sx={{ m: '10px 0px' }} component={'div'}>
 								<div className={'welcome'}>Welcome to Live chat!</div>
 							</Box>
-							{messagesList}
-							<>
-								<Box
-									component={'div'}
-									flexDirection={'row'}
-									style={{ display: 'flex' }}
-									alignItems={'flex-end'}
-									justifyContent={'flex-end'}
-									sx={{ m: '10px 0px' }}
-								>
-									<div className={'msg-right'}>hi</div>
-								</Box>
-								<Box flexDirection={'row'} style={{ display: 'flex' }} sx={{ m: '10px 0px' }} component={'div'}>
-									<Avatar alt={'jonik'} src={'/img/profile/defaultUser.svg'} />
-									<div className={'msg-left'}>Hi</div>
-								</Box>
-							</>
+							{messagesList.map((ele: MessagePayload, index: number) => {
+								const { text, memberData } = ele;
+								const messageText = text || '';
+								const memberImage = memberData?.memberImage
+									? `${REACT_APP_API_URL}/${memberData?.memberImage}`
+									: '/img/profile/defaultUser.svg';
+								const isOwnMessage = memberData?._id === user?._id;
+								return (
+									<Box
+										key={`${memberData?._id || 'unknown'}-${index}-${messageText.substring(0, 10)}`}
+										component={'div'}
+										flexDirection={'row'}
+										style={{ display: 'flex' }}
+										alignItems={'flex-end'}
+										justifyContent={isOwnMessage ? 'flex-end' : 'flex-start'}
+										sx={{ m: '10px 0px' }}
+									>
+										{isOwnMessage ? (
+											<div className={'msg-right'}>{messageText}</div>
+										) : (
+											<>
+												<Avatar alt={memberData?.memberNick || 'User'} src={memberImage} />
+												<div className={'msg-left'}>{messageText}</div>
+											</>
+										)}
+									</Box>
+								);
+							})}
 						</Stack>
 					</ScrollableFeed>
 				</Box>
 				<Box className={'chat-bott'} component={'div'}>
 					<input
-						ref={textInput}
 						type={'text'}
 						name={'message'}
 						className={'msg-input'}
 						placeholder={'Type message'}
+						value={messageInput}
 						onChange={getInputMessageHandler}
 						onKeyDown={getKeyHandler}
 					/>
