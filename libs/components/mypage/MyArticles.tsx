@@ -47,7 +47,7 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 		setSearchCommunity({ ...searchCommunity, page: value });
 	};
 
-	const likeBoArticleHandler = async (e: any, user: any, id: string) => {
+	const likeArticleHandler = async (e: any, user: any, id: string) => {
 		try {
 			e.stopPropagation();
 			if (!id) return;
@@ -62,7 +62,7 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 
 			await sweetTopSmallSuccessAlert('Success!', 750);
 		} catch (err: any) {
-			console.log('ERROR, likeBoArticleHandler:', err.message);
+			console.log('ERROR, likeArticleHandler:', err.message);
 			sweetMixinErrorAlert(err.message).then();
 		}
 	};
@@ -84,7 +84,7 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 							return (
 								<CommunityCard
 									boardArticle={boardArticle}
-									likeBoArticleHandler={likeBoArticleHandler}
+									likeArticleHandler={likeArticleHandler}
 									key={boardArticle?._id}
 									size={'small'}
 								/>

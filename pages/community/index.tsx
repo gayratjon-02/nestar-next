@@ -181,7 +181,7 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 													return (
 														<CommunityCard
 															boardArticle={boardArticle}
-															likeBoArticleHandler={likeArticleHandler}
+															likeArticleHandler={likeArticleHandler}
 															key={boardArticle?._id}
 														/>
 													);
@@ -201,7 +201,7 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 													return (
 														<CommunityCard
 															boardArticle={boardArticle}
-															likeBoArticleHandler={likeArticleHandler}
+															likeArticleHandler={likeArticleHandler}
 															key={boardArticle?._id}
 														/>
 													);
@@ -221,7 +221,7 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 													return (
 														<CommunityCard
 															boardArticle={boardArticle}
-															likeBoArticleHandler={likeArticleHandler}
+															likeArticleHandler={likeArticleHandler}
 															key={boardArticle?._id}
 														/>
 													);
@@ -241,7 +241,7 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 													return (
 														<CommunityCard
 															boardArticle={boardArticle}
-															likeBoArticleHandler={likeArticleHandler}
+															likeArticleHandler={likeArticleHandler}
 															key={boardArticle?._id}
 														/>
 													);

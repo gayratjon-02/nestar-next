@@ -1,0 +1,27 @@
+version: '3.3'
+
+services:
+  nestar-next:
+    container_name: nestar-next
+    restart: always
+    image: node:20.10.0
+    ports:
+      - 4000:3000
+    environment:
+      - PORT=3000
+    volumes:
+      - ./:/usr/src/nestar-next
+    working_dir: /usr/src/nestar-next
+
+    networks:
+      - client-network
+
+    # FOR PRODUCTION
+    command: bash -c "yarn && yarn build && yarn start"
+
+networks:
+  client-network:
+    driver: bridge
+# nestar-next:  localhost:4000 <=> container:3000
+# nestar-api:   localhost:4001 <=> container:3007
+# nestar-batch: localhost:4002 <=> container:3008

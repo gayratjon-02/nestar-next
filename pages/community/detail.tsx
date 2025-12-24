@@ -124,7 +124,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 		);
 	};
 
-	const likeBoArticleHandler = async (user: any, id: any) => {
+	const likeArticleHandler = async (user: any, id: any) => {
 		try {
 			if (likeLoading) return;
 			if (!id) return;
@@ -140,7 +140,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 			await boardArticleRefetch({ input: articleId });
 			await sweetTopSmallSuccessAlert('Success!', 800);
 		} catch (err: any) {
-			console.log('ERROR, likeBoArticleHandler:', err.message);
+			console.log('ERROR, likeArticleHandler:', err.message);
 			sweetMixinErrorAlert(err.message).then();
 		} finally {
 			setLikeLoading(false);
@@ -329,9 +329,9 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 										<Stack className="info">
 											<Stack className="icon-info">
 												{boardArticle?.meLiked && boardArticle?.meLiked[0]?.myFavorite ? (
-													<ThumbUpAltIcon onClick={() => likeBoArticleHandler(user, boardArticle?._id)} />
+													<ThumbUpAltIcon onClick={() => likeArticleHandler(user, boardArticle?._id)} />
 												) : (
-													<ThumbUpOffAltIcon onClick={() => likeBoArticleHandler(user, boardArticle?._id)} />
+													<ThumbUpOffAltIcon onClick={() => likeArticleHandler(user, boardArticle?._id)} />
 												)}
 
 												<Typography className="text">{boardArticle?.articleLikes}</Typography>
@@ -355,9 +355,9 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 										<Stack className="top">
 											<Button>
 												{boardArticle?.meLiked && boardArticle?.meLiked[0]?.myFavorite ? (
-													<ThumbUpAltIcon onClick={() => likeBoArticleHandler(user, boardArticle?._id)} />
+													<ThumbUpAltIcon onClick={() => likeArticleHandler(user, boardArticle?._id)} />
 												) : (
-													<ThumbUpOffAltIcon onClick={() => likeBoArticleHandler(user, boardArticle?._id)} />
+													<ThumbUpOffAltIcon onClick={() => likeArticleHandler(user, boardArticle?._id)} />
 												)}
 												<Typography className="text">{boardArticle?.articleLikes}</Typography>
 											</Button>
@@ -421,7 +421,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 																<DeleteForeverIcon sx={{ color: '#757575', cursor: 'pointer' }} />
 															</IconButton>
 															<IconButton
-																onClick={(e) => {
+																onClick={(e: React.SyntheticEvent) => {
 																	setUpdatedComment(commentData?.commentContent);
 																	setUpdatedCommentWordsCnt(commentData?.commentContent?.length);
 																	setUpdatedCommentId(commentData?._id);
